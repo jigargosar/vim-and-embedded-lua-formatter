@@ -125,16 +125,20 @@ augroup END
 "
 " Usage example for your init.vim:
 " If you use an init.vim file (Vimscript), you can add a Lua block with the following configuration.
-"
 " lua << EOF
-"   require("conform").setup({
-"     formatters_by_ft = {
-"       vim = { vim.fn.VimAndEmbeddedLuaFormatter_Format },
-"     },
-"     -- Other Conform.nvim settings can go here.
-"   })
+" require("conform").setup({
+" 	formatters = {
+" 		vimscript_formatter = { -- using a valid identifier as the key
+" 			format = function(bufnr)
+" 				return vim.fn.VimAndEmbeddedLuaFormatter_Format() == 1
+" 			end,
+" 		},
+" 	},
+" 	formatters_by_ft = {
+" 		vim = { "vimscript_formatter", lsp_format = "fallback" },
+" 	},
+" })
 " EOF
-"
 " With this setup, formatting your init.vim (or any Vimscript file) will invoke the
 " VimAndEmbeddedLuaFormatter_Format() function defined below.
 function! VimAndEmbeddedLuaFormatter_Format() abort

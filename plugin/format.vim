@@ -1,5 +1,5 @@
 " plugin/format.vim
-"
+
 " Prevent multiple loading
 if exists('g:loaded_vim_and_embedded_lua_formatter')
   finish
@@ -91,24 +91,46 @@ function! s:FormatBoth() abort
 endfunction
 
 " ====================================
-" <Plug> Mappings for User Customization
+" Setup for Vim files: Buffer local mappings and commands
 " ====================================
-" Expose <Plug> mappings so users can define their own key bindings without polluting the global namespace.
-nnoremap <silent> <Plug>(vim_and_embedded_lua_formatter_format_both) :call <SID>FormatBoth()<CR>
-nnoremap <silent> <Plug>(vim_and_embedded_lua_formatter_format_lua)  :call <SID>FormatLuaBlocks()<CR>
-nnoremap <silent> <Plug>(vim_and_embedded_lua_formatter_format_vim)  :call <SID>FormatVimscript()<CR>
+function! s:SetupVimFormatter() abort
+  " Create buffer-local <Plug> mappings, available only in Vimscript buffers.
+  nnoremap <buffer> <silent> <Plug>(vim_and_embedded_lua_formatter_format_both) :call <SID>FormatBoth()<CR>
+  nnoremap <buffer> <silent> <Plug>(vim_and_embedded_lua_formatter_format_lua)  :call <SID>FormatLuaBlocks()<CR>
+  nnoremap <buffer> <silent> <Plug>(vim_and_embedded_lua_formatter_format_vim)  :call <SID>FormatVimscript()<CR>
+
+  " Explicit commands are exposed by default.
+  " Users can opt out by setting:
+  "     let g:vim_and_embedded_lua_formatter_expose_commands = 0
+  if !exists("g:vim_and_embedded_lua_formatter_expose_commands")
+    let g:vim_and_embedded_lua_formatter_expose_commands = 1
+  endif
+
+  if g:vim_and_embedded_lua_formatter_expose_commands
+    command! -buffer VimLuaFormatBoth call <SID>FormatBoth()
+    command! -buffer VimLuaFormatLua call <SID>FormatLuaBlocks()
+    command! -buffer VimLuaFormatVim call <SID>FormatVimscript()
+  endif
+endfunction
+
+" Auto-load mappings and commands only for Vimscript files.
+augroup vim_and_embedded_lua_formatter
+  autocmd!
+  autocmd FileType vim call s:SetupVimFormatter()
+augroup END
 
 " ====================================
-" Optional: Explicit Commands (Opt Out)
+" Global Formatting Function for Conform.nvim
 " ====================================
-" Explicit commands are created by default. To disable them, add the following to your vimrc:
-"     let g:vim_and_embedded_lua_formatter_expose_commands = 0
-if !exists("g:vim_and_embedded_lua_formatter_expose_commands")
-  let g:vim_and_embedded_lua_formatter_expose_commands = 1
-endif
-
-if g:vim_and_embedded_lua_formatter_expose_commands
-  command! VimLuaFormatBoth  call <SID>FormatBoth()
-  command! VimLuaFormatLua   call <SID>FormatLuaBlocks()
-  command! VimLuaFormatVim   call <SID>FormatVimscript()
-endif
+" This global Vim function is intended for users to register directly within Conform's
+" settings. For instance, in your lua init.lua you can set:
+"    formatters_by_ft = { vim = { vim.vim_and_embedded_lua_formatter_format } }
+" It calls the explicit Vim command that runs all of our formatting logic.
+function! VimAndEmbeddedLuaFormatter_Format() abort
+  if &filetype !=# 'vim'
+    return 0
+  endif
+  " Call the formatter command (explicit commands are created by default).
+  VimLuaFormatBoth
+  return 1
+endfunction

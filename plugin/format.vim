@@ -149,3 +149,108 @@ function! VimAndEmbeddedLuaFormatter_Format() abort
   VimLuaFormatBoth
   return 1
 endfunction
+
+
+" This plugin was made from following functions, keeping here as reference.
+
+" function! FormatVimscript()
+"     " Save the current view (cursor position, window scroll, etc.)
+"     let l:view = winsaveview()
+
+"     " Save the original buffer content for comparison.
+"     let l:orig = join(getline(1, '$'), "\n")
+
+"     " Initialize flag for Lua block state.
+"     let l:inside_lua = v:false
+
+"     " Get total number of lines.
+"     let l:linecount = line('$')
+
+"     " Iterate over each line in the buffer.
+"     for i in range(1, l:linecount)
+"         let l:line = getline(i)
+
+"         " Detect start of a Lua block.
+"         if l:line =~? '^lua << EOF'
+"             let l:inside_lua = v:true
+"             " Detect end of a Lua block.
+"         elseif l:inside_lua && l:line =~? '^EOF'
+"             let l:inside_lua = v:false
+"         endif
+
+"         " If we're not inside a Lua block, reindent the line.
+"         if !l:inside_lua
+"             " Reindent the line using the '==' command.
+"             " Using 'execute' to run the normal mode command on line i.
+"             execute i . 'normal! =='
+"         endif
+"     endfor
+
+"     " After formatting, compare the new buffer content with the original.
+"     let l:new = join(getline(1, '$'), "\n")
+"     if l:new == l:orig
+"         set nomodified
+"     endif
+
+"     " Restore the original view (cursor position, etc.)
+"     call winrestview(l:view)
+" endfunction
+
+" command! FormatVimscript call FormatVimscript()
+
+
+
+
+" function! FormatLuaBlocks()
+"     " Save the current view (cursor, window position, etc.)
+"     let l:view = winsaveview()
+
+"     let l:inside_lua_block = v:false
+"     let l:lua_code = []              " Collect Lua lines for formatting
+"     let l:lines = getline(1, '$')     " Get all lines from the buffer
+"     let l:formatted_lines = []
+
+"     for l:lnum in range(len(l:lines))
+"         let l:line = l:lines[l:lnum]
+"         " Detect Lua block start
+"         if l:line =~? '^lua << EOF'
+"             let l:inside_lua_block = v:true
+"             call add(l:formatted_lines, l:line)
+"             continue
+"             " Detect Lua block end
+"         elseif l:inside_lua_block && l:line =~? '^EOF'
+"             " Format the collected Lua block via StyLua using stdin
+"             let l:formatted_code = system("stylua -", join(l:lua_code, "\n"))
+"             " Append the formatted code and the EOF marker back
+"             call extend(l:formatted_lines, split(l:formatted_code, "\n"))
+"             call add(l:formatted_lines, l:line)
+"             let l:inside_lua_block = v:false
+"             let l:lua_code = []        " Reset Lua block capture
+"             continue
+"         endif
+
+"         " If inside a Lua block, collect the code; otherwise, preserve the line.
+"         if l:inside_lua_block
+"             call add(l:lua_code, l:line)
+"         else
+"             call add(l:formatted_lines, l:line)
+"         endif
+"     endfor
+
+"     call setline(1, l:formatted_lines)
+"     " Restore the original view (cursor and scroll position)
+"     call winrestview(l:view)
+" endfunction
+
+" command! FormatLuaBlocks call FormatLuaBlocks()
+
+
+" function! FormatBoth()
+"     " First, format Lua blocks.
+"     call FormatLuaBlocks()
+"     " Then, format Vim blocks (this function remains unmodified).
+"     call FormatVimscript()
+" endfunction
+
+" command! FormatBoth call FormatBoth()
+

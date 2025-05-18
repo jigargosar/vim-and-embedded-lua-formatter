@@ -33,7 +33,7 @@ This plugin formats Vimscript files while preserving embedded Lua blocks. It ens
 
 Use a plugin manager:
 
-Plug 'yourname/vim-embedded-lua-formatter'
+Plug 'jigargosar/vim-embedded-lua-formatter'
 
 Or manually copy files into `~/.vim`.
 

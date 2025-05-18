@@ -35,8 +35,6 @@ Use a plugin manager:
 
 Plug 'jigargosar/vim-embedded-lua-formatter'
 
-Or manually copy files into `~/.vim`.
-
 --------------------------------------------------------
 3. Commands & Mappings
 --------------------------------------------------------
@@ -61,19 +59,21 @@ Buffer-local mappings are automatically set for Vimscript buffers:
 
 This plugin integrates with Conform.nvim for formatting Vimscript files. Example configuration:
 
-require("conform").setup({
-formatters = {
-vimscript_formatter = {
-format = function(bufnr)
-return vim.fn.VimAndEmbeddedLuaFormatter_Format() == 1
-end,
-},
-},
-formatters_by_ft = {
-vim = { "vimscript_formatter", lsp_format = "fallback" },
-},
-})
 
+```lua
+require("conform").setup({
+    formatters = {
+        vimscript_formatter = {
+            format = function(bufnr)
+                return vim.fn.VimAndEmbeddedLuaFormatter_Format() == 1
+            end,
+        },
+    },
+    formatters_by_ft = {
+        vim = { "vimscript_formatter", lsp_format = "fallback" },
+    },
+})
+```
 --------------------------------------------------------
 5. Configuration
 --------------------------------------------------------

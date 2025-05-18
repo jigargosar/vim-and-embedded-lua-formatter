@@ -1,3 +1,5 @@
+*vim-and-embedded-lua-formatter*
+
 Vim and Embedded Lua Formatter
 
 Author: Jigar

@@ -91,7 +91,7 @@ function! s:FormatBoth() abort
 endfunction
 
 " ====================================
-" Setup for Vim files: Buffer local mappings and commands
+" Setup for Vim files: Buffer-local mappings and commands
 " ====================================
 function! s:SetupVimFormatter() abort
   " Create buffer-local <Plug> mappings, available only in Vimscript buffers.
@@ -122,15 +122,26 @@ augroup END
 " ====================================
 " Global Formatting Function for Conform.nvim
 " ====================================
-" This global Vim function is intended for users to register directly within Conform's
-" settings. For instance, in your lua init.lua you can set:
-"    formatters_by_ft = { vim = { vim.vim_and_embedded_lua_formatter_format } }
-" It calls the explicit Vim command that runs all of our formatting logic.
+"
+" Usage example for your init.vim:
+" If you use an init.vim file (Vimscript), you can add a Lua block with the following configuration.
+"
+" lua << EOF
+"   require("conform").setup({
+"     formatters_by_ft = {
+"       vim = { vim.fn.VimAndEmbeddedLuaFormatter_Format },
+"     },
+"     -- Other Conform.nvim settings can go here.
+"   })
+" EOF
+"
+" With this setup, formatting your init.vim (or any Vimscript file) will invoke the
+" VimAndEmbeddedLuaFormatter_Format() function defined below.
 function! VimAndEmbeddedLuaFormatter_Format() abort
   if &filetype !=# 'vim'
     return 0
   endif
-  " Call the formatter command (explicit commands are created by default).
+  " Call the explicit command that formats both Vimscript and embedded Lua.
   VimLuaFormatBoth
   return 1
 endfunction

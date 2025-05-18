@@ -1,82 +1,110 @@
-if exists('g:loaded_vim_lua_format')
-    finish
+" plugin/format.vim
+
+" Prevent multiple loading
+if exists('g:loaded_vim_and_embedded_lua_formatter')
+  finish
 endif
-let g:loaded_vim_lua_format = 1
+let g:loaded_vim_and_embedded_lua_formatter = 1
 
-" Format Vimscript blocks
-function! s:FormatVimscript()
-    let l:view = winsaveview()
-    let l:orig = join(getline(1, '$'), "\n")
-    let l:inside_lua = v:false
-    let l:linecount = line('$')
+" ====================================
+" Script-local Formatting Functions
+" ====================================
 
-    for i in range(1, l:linecount)
-        let l:line = getline(i)
-        if l:line =~? '^lua << EOF'
-            let l:inside_lua = v:true
-        elseif l:inside_lua && l:line =~? '^EOF'
-            let l:inside_lua = v:false
-        endif
+" Function: Format Vimscript blocks (excludes embedded Lua blocks)
+function! s:FormatVimscript() abort
+  " Save the current view (cursor position, window scroll, etc.)
+  let l:view = winsaveview()
+  let l:orig = join(getline(1, '$'), "\n")
+  let l:inside_lua = v:false
+  let l:linecount = line('$')
 
-        if !l:inside_lua
-            execute i . 'normal! =='
-        endif
-    endfor
-
-    let l:new = join(getline(1, '$'), "\n")
-    if l:new == l:orig
-        set nomodified
+  for i in range(1, l:linecount)
+    let l:line = getline(i)
+    " Detect start of a Lua block.
+    if l:line =~? '^lua << EOF'
+      let l:inside_lua = v:true
+    " Detect end of a Lua block.
+    elseif l:inside_lua && l:line =~? '^EOF'
+      let l:inside_lua = v:false
     endif
 
-    call winrestview(l:view)
+    " Only indent lines that are not within a Lua block.
+    if !l:inside_lua
+      execute i . 'normal! =='
+    endif
+  endfor
+
+  let l:new = join(getline(1, '$'), "\n")
+  if l:new == l:orig
+    set nomodified
+  endif
+
+  call winrestview(l:view)
 endfunction
 
-command! FormatVimscript call s:FormatVimscript()
+" Function: Format Lua blocks using StyLua
+function! s:FormatLuaBlocks() abort
+  " Save the current view (cursor position, etc.)
+  let l:view = winsaveview()
+  let l:inside_lua_block = v:false
+  let l:lua_code = []
+  let l:lines = getline(1, '$')
+  let l:formatted_lines = []
 
-" Format Lua blocks using StyLua
-function! s:FormatLuaBlocks()
-    let l:view = winsaveview()
-    let l:inside_lua_block = v:false
-    let l:lua_code = []
-    let l:lines = getline(1, '$')
-    let l:formatted_lines = []
+  for l:lnum in range(len(l:lines))
+    let l:line = l:lines[l:lnum]
+    " Detect Lua block start.
+    if l:line =~? '^lua << EOF'
+      let l:inside_lua_block = v:true
+      call add(l:formatted_lines, l:line)
+      continue
+    " Detect Lua block end.
+    elseif l:inside_lua_block && l:line =~? '^EOF'
+      let l:formatted_code = system("stylua -", join(l:lua_code, "\n"))
+      if v:shell_error
+        echomsg "StyLua formatting failed!"
+        return
+      endif
+      " Append the formatted code.
+      call extend(l:formatted_lines, split(l:formatted_code, "\n"))
+      call add(l:formatted_lines, l:line)
+      let l:inside_lua_block = v:false
+      let l:lua_code = []
+      continue
+    endif
 
-    for l:lnum in range(len(l:lines))
-        let l:line = l:lines[l:lnum]
-        if l:line =~? '^lua << EOF'
-            let l:inside_lua_block = v:true
-            call add(l:formatted_lines, l:line)
-            continue
-        elseif l:inside_lua_block && l:line =~? '^EOF'
-            let l:formatted_code = system("stylua -", join(l:lua_code, "\n"))
-            if v:shell_error
-                echomsg "StyLua formatting failed!"
-                return
-            endif
-            call extend(l:formatted_lines, split(l:formatted_code, "\n"))
-            call add(l:formatted_lines, l:line)
-            let l:inside_lua_block = v:false
-            let l:lua_code = []
-            continue
-        endif
+    if l:inside_lua_block
+      call add(l:lua_code, l:line)
+    else
+      call add(l:formatted_lines, l:line)
+    endif
+  endfor
 
-        if l:inside_lua_block
-            call add(l:lua_code, l:line)
-        else
-            call add(l:formatted_lines, l:line)
-        endif
-    endfor
-
-    call setline(1, l:formatted_lines)
-    call winrestview(l:view)
+  call setline(1, l:formatted_lines)
+  call winrestview(l:view)
 endfunction
 
-command! FormatLuaBlocks call s:FormatLuaBlocks()
-
-" Format both Lua and Vimscript blocks
-function! s:FormatBoth()
-    call s:FormatLuaBlocks()
-    call s:FormatVimscript()
+" Function: Format both Lua and Vimscript blocks
+function! s:FormatBoth() abort
+  call s:FormatLuaBlocks()
+  call s:FormatVimscript()
 endfunction
 
-command! FormatBoth call s:FormatBoth()
+" ====================================
+" <Plug> Mappings for User Customization
+" ====================================
+" These mappings allow users to define their own key bindings without polluting the global command space.
+nnoremap <silent> <Plug>(vim_and_embedded_lua_formatter_format_both) :call <SID>FormatBoth()<CR>
+nnoremap <silent> <Plug>(vim_and_embedded_lua_formatter_format_lua)  :call <SID>FormatLuaBlocks()<CR>
+nnoremap <silent> <Plug>(vim_and_embedded_lua_formatter_format_vim)  :call <SID>FormatVimscript()<CR>
+
+" ====================================
+" Optional: Explicit Commands
+" ====================================
+" Set the following variable in your vimrc to 1 if you want to expose explicit commands:
+"     let g:vim_and_embedded_lua_formatter_expose_commands = 1
+if exists("g:vim_and_embedded_lua_formatter_expose_commands") && g:vim_and_embedded_lua_formatter_expose_commands
+  command! VimLuaFormatBoth  call <SID>FormatBoth()
+  command! VimLuaFormatLua   call <SID>FormatLuaBlocks()
+  command! VimLuaFormatVim   call <SID>FormatVimscript()
+endif

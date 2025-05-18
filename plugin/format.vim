@@ -1,5 +1,5 @@
 " plugin/format.vim
-
+"
 " Prevent multiple loading
 if exists('g:loaded_vim_and_embedded_lua_formatter')
   finish
@@ -93,17 +93,21 @@ endfunction
 " ====================================
 " <Plug> Mappings for User Customization
 " ====================================
-" These mappings allow users to define their own key bindings without polluting the global command space.
+" Expose <Plug> mappings so users can define their own key bindings without polluting the global namespace.
 nnoremap <silent> <Plug>(vim_and_embedded_lua_formatter_format_both) :call <SID>FormatBoth()<CR>
 nnoremap <silent> <Plug>(vim_and_embedded_lua_formatter_format_lua)  :call <SID>FormatLuaBlocks()<CR>
 nnoremap <silent> <Plug>(vim_and_embedded_lua_formatter_format_vim)  :call <SID>FormatVimscript()<CR>
 
 " ====================================
-" Optional: Explicit Commands
+" Optional: Explicit Commands (Opt Out)
 " ====================================
-" Set the following variable in your vimrc to 1 if you want to expose explicit commands:
-"     let g:vim_and_embedded_lua_formatter_expose_commands = 1
-if exists("g:vim_and_embedded_lua_formatter_expose_commands") && g:vim_and_embedded_lua_formatter_expose_commands
+" Explicit commands are created by default. To disable them, add the following to your vimrc:
+"     let g:vim_and_embedded_lua_formatter_expose_commands = 0
+if !exists("g:vim_and_embedded_lua_formatter_expose_commands")
+  let g:vim_and_embedded_lua_formatter_expose_commands = 1
+endif
+
+if g:vim_and_embedded_lua_formatter_expose_commands
   command! VimLuaFormatBoth  call <SID>FormatBoth()
   command! VimLuaFormatLua   call <SID>FormatLuaBlocks()
   command! VimLuaFormatVim   call <SID>FormatVimscript()

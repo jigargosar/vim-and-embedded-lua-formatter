@@ -1,0 +1,14 @@
+= vim-and-embedded-lua-formatter
+
+vim-and-embedded-lua-formatter provides formatting for embedded Lua and Vimscript blocks.
+
+COMMANDS:
+    :FormatLuaBlocks  - Formats Lua blocks using StyLua.
+    :FormatVimscript  - Formats Vimscript indentation.
+    :FormatBoth       - Formats both Lua and Vimscript blocks.
+
+INSTALLATION:
+Use VimPlug:
+
+    Plug 'jigargosar/vim-and-embedded-lua-formatter'
+
